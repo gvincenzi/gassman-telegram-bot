@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient("gassman-order-service/users")
 public interface UserResourceClient {
+    @GetMapping("/telegram/{id}")
+    UserDTO findUserByTelegramId(@PathVariable("id") Integer id);
+
     @PostMapping()
     UserDTO addUser(@RequestBody UserDTO userDTO);
 

@@ -3,9 +3,11 @@ package org.gassman.telegram.bot;
 import feign.FeignException;
 import org.gassman.telegram.bot.client.OrderResourceClient;
 import org.gassman.telegram.bot.client.ProductResourceClient;
+import org.gassman.telegram.bot.client.UserCreditResourceClient;
 import org.gassman.telegram.bot.client.UserResourceClient;
 import org.gassman.telegram.bot.dto.OrderDTO;
 import org.gassman.telegram.bot.dto.ProductDTO;
+import org.gassman.telegram.bot.dto.UserCreditDTO;
 import org.gassman.telegram.bot.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,11 +32,11 @@ public class GrassmanBot extends TelegramLongPollingBot {
     @Value("${gassman.telegram.bot.token}")
     private String botToken;
 
-    @Value("${gassman.list.cache.minutes}")
-    private int listCacheMinutes;
-
     @Autowired
     private UserResourceClient userResourceClient;
+
+    @Autowired
+    private UserCreditResourceClient userCreditResourceClient;
 
     @Autowired
     private ProductResourceClient productResourceClient;
@@ -69,11 +71,19 @@ public class GrassmanBot extends TelegramLongPollingBot {
                 message = new SendMessage()
                         .setChatId(chat_id)
                         .setText("Utente rimosso correttamente");
-            } else if (call_data.equals("listaProdotti")) {
-                if (products == null || ChronoUnit.MINUTES.between(lastProductsUpdate, LocalDateTime.now()) > listCacheMinutes) {
-                    this.products = productResourceClient.findAll();
-                    this.lastProductsUpdate = LocalDateTime.now();
+            } else if (call_data.equals("creditoResiduo")) {
+                UserDTO user;
+                try {
+                    user = userResourceClient.findUserByTelegramId(user_id);
+                } catch (FeignException ex) {
+                    user = null;
                 }
+                UserCreditDTO userCreditDTO = userCreditResourceClient.findById(user.getId());
+                message = new SendMessage()
+                        .setChatId(chat_id)
+                        .setText(String.format("Il tuo credito residuo : %s €", userCreditDTO.getCredit()));
+            } else if (call_data.equals("listaProdotti")) {
+                this.products = productResourceClient.findAll();
                 if (products.isEmpty()) {
                     message = new SendMessage()
                             .setChatId(chat_id)
@@ -176,18 +186,29 @@ public class GrassmanBot extends TelegramLongPollingBot {
     }
 
     private SendMessage welcomeMessage(Update update) {
+        UserDTO user;
+        try {
+            user = userResourceClient.findUserByTelegramId(update.getMessage().getFrom().getId());
+        } catch (FeignException ex) {
+            user = null;
+        }
         SendMessage message;
         message = new SendMessage()
                 .setChatId(update.getMessage().getChatId())
-                .setText("Benvenuto nel sistema GasSMan.\nScegli tra le seguenti opzioni:");
+                .setText(String.format("%s,\nScegli tra le seguenti opzioni:",user == null ? "Benvenuto nel sistema GasSMan" : "Bentornato " + user.getName()));
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
-        rowInline1.add(new InlineKeyboardButton().setText("Iscrizione").setCallbackData("iscrizione"));
-        rowInline1.add(new InlineKeyboardButton().setText("Cancellazione").setCallbackData("cancellazione"));
-        rowInline2.add(new InlineKeyboardButton().setText("Lista dei prodotti").setCallbackData("listaProdotti"));
+        if(user == null){
+            rowInline1.add(new InlineKeyboardButton().setText("Iscrizione").setCallbackData("iscrizione"));
+        } else {
+            rowInline1.add(new InlineKeyboardButton().setText("Cancellazione").setCallbackData("cancellazione"));
+            rowInline1.add(new InlineKeyboardButton().setText("Credito residuo").setCallbackData("creditoResiduo"));
+            rowInline2.add(new InlineKeyboardButton().setText("Lista dei prodotti").setCallbackData("listaProdotti"));
+        }
+
         // Set the keyboard to the markup
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);

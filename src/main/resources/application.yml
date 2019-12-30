@@ -18,6 +18,3 @@ gassman:
     bot:
       username: YOUR_USERNAME
       token: YOUR_TOKEN
-  list:
-    cache:
-      minutes: 0
