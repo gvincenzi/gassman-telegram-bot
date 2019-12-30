@@ -129,7 +129,7 @@ public class GrassmanBot extends TelegramLongPollingBot {
 
                 message = new SendMessage()
                         .setChatId(chat_id)
-                        .setText("Ordine creato correttamente, indicare la quantità per finalizzare l'ordine");
+                        .setText("Ordine creato correttamente, inviare un ulteriore messaggio indicando solo la quantità desiderata (solo il valore numerico, senza unità di misura) per finalizzare l'ordine");
             }
         }
 
