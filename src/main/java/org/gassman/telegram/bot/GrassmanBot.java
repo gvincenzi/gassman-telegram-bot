@@ -150,7 +150,7 @@ public class GrassmanBot extends TelegramLongPollingBot {
                 orderResourceClient.postOrder(orderDTO);
                 message = new SendMessage()
                         .setChatId(update.getMessage().getChatId())
-                        .setText("Ordine finalizzato correttamente, una mail di conferma è stata inviata sul tuo indirizzo email");
+                        .setText("Ordine finalizzato correttamente, una mail di conferma con una sintesi dell'acquisto e le modalità di pagamento è stata inviata sul tuo indirizzo email");
             } catch (FeignException e) {
                 if (e.status() == HttpStatus.NOT_ACCEPTABLE.value()) {
                     message = new SendMessage()
@@ -173,7 +173,7 @@ public class GrassmanBot extends TelegramLongPollingBot {
             userResourceClient.addUser(userDTO);
             message = new SendMessage()
                     .setChatId(update.getMessage().getChatId())
-                    .setText("Nuovo utente iscritto correttamente : una mail di conferma è stata inviata all'indirizzo specificato");
+                    .setText("Nuovo utente iscritto correttamente : una mail di conferma è stata inviata all'indirizzo specificato.\nClicca su /start per iniziare.");
 
         } else if (update.hasMessage()){
             message = welcomeMessage(update);
@@ -195,7 +195,7 @@ public class GrassmanBot extends TelegramLongPollingBot {
         SendMessage message;
         message = new SendMessage()
                 .setChatId(update.getMessage().getChatId())
-                .setText(String.format("%s,\nScegli tra le seguenti opzioni:",user == null ? "Benvenuto nel sistema GasSMan" : "Bentornato " + user.getName()));
+                .setText(String.format("%s,\nScegli tra le seguenti opzioni:",user == null ? "Benvenuto nel sistema GasSMan" : "Ciao " + user.getName()));
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
