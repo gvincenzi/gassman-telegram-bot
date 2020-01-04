@@ -25,7 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-public class GrassmanBot extends TelegramLongPollingBot {
+public class GassmanOrderBot extends TelegramLongPollingBot {
     @Value("${gassman.telegram.bot.username}")
     private String botUsername;
 
