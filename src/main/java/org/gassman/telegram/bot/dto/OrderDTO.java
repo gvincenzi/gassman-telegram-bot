@@ -10,7 +10,7 @@ public class OrderDTO implements Comparable<OrderDTO>{
     private Integer quantity;
     private UserDTO user;
     private ProductDTO product;
-    private Boolean paid;
+    private Boolean paid = Boolean.FALSE;
 
     @Override
     public int compareTo(OrderDTO orderDTO) {
