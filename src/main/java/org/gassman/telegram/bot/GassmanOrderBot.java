@@ -72,16 +72,52 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                         .setChatId(chat_id)
                         .setText("Utente rimosso correttamente");
             } else if (call_data.equals("creditoResiduo")) {
-                UserDTO user;
-                try {
-                    user = userResourceClient.findUserByTelegramId(user_id);
-                } catch (FeignException ex) {
-                    user = null;
-                }
+                UserDTO user = findUserByTelegramId(user_id);
                 UserCreditDTO userCreditDTO = userCreditResourceClient.findById(user.getId());
                 message = new SendMessage()
                         .setChatId(chat_id)
                         .setText(String.format("Il tuo credito residuo : %s €", userCreditDTO.getCredit()));
+            } else if (call_data.startsWith("listaOrdini")) {
+                UserDTO userDTO = findUserByTelegramId(user_id);
+                List<OrderDTO> orders = orderResourceClient.findAllOrdersByUser(userDTO.getId());
+                if (orders.isEmpty()) {
+                    message = new SendMessage()
+                            .setChatId(chat_id)
+                            .setText("Non hai ordini in corso");
+                } else {
+                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                    Collections.sort(orders);
+                    for (OrderDTO orderDTO : orders) {
+                        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                        rowInline.add(new InlineKeyboardButton().setText("ID#"+orderDTO.getOrderId()+" : "+orderDTO.getProduct().getName()).setCallbackData("orderDetails#" + orderDTO.getOrderId()));
+                        rowsInline.add(rowInline);
+                    }
+
+                    markupInline.setKeyboard(rowsInline);
+                    message = new SendMessage()
+                            .setChatId(chat_id)
+                            .setText("Qui di seguito la lista dei tuoi ordini in corso, per accedere ai dettagli cliccare sull'ordine:\n");
+
+                    message.setReplyMarkup(markupInline);
+                }
+            } else if (call_data.startsWith("orderDetails#")) {
+                String[] split = call_data.split("#");
+                Long orderId = Long.parseLong(split[1]);
+                OrderDTO orderDTO = orderResourceClient.findOrderById(orderId);
+                message = new SendMessage()
+                    .setChatId(chat_id)
+                    .setText(orderDTO.toString());
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                //rowInline.add(new InlineKeyboardButton().setText("Paga questo ordine").setCallbackData("orderPayment#" + orderId));
+                rowInline.add(new InlineKeyboardButton().setText("Torna alla lista").setCallbackData("listaOrdini"));
+                // Set the keyboard to the markup
+                rowsInline.add(rowInline);
+                // Add it to the message
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
             } else if (call_data.equals("listaProdotti")) {
                 this.products = productResourceClient.findAll();
                 if (products.isEmpty()) {
@@ -150,7 +186,22 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 orderResourceClient.postOrder(orderDTO);
                 message = new SendMessage()
                         .setChatId(update.getMessage().getChatId())
-                        .setText("Ordine finalizzato correttamente, una mail di conferma con una sintesi dell'acquisto e le modalità di pagamento è stata inviata sul tuo indirizzo email");
+                        .setText("Ordine finalizzato correttamente, una mail di conferma con una sintesi dell'acquisto e le modalità di pagamento è stata inviata sul tuo indirizzo email.");
+
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+                rowInline1.add(new InlineKeyboardButton().setText("Lista dei tuoi ordini attivi").setCallbackData("listaOrdini"));
+                rowInline2.add(new InlineKeyboardButton().setText("Torna alla lista dei prodotti").setCallbackData("listaProdotti"));
+
+                // Set the keyboard to the markup
+                rowsInline.add(rowInline1);
+                rowsInline.add(rowInline2);
+                // Add it to the message
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
+
             } catch (FeignException e) {
                 if (e.status() == HttpStatus.NOT_ACCEPTABLE.value()) {
                     message = new SendMessage()
@@ -185,13 +236,18 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
         }
     }
 
-    private SendMessage welcomeMessage(Update update) {
+    private UserDTO findUserByTelegramId(Integer user_id) {
         UserDTO user;
         try {
-            user = userResourceClient.findUserByTelegramId(update.getMessage().getFrom().getId());
+            user = userResourceClient.findUserByTelegramId(user_id);
         } catch (FeignException ex) {
             user = null;
         }
+        return user;
+    }
+
+    private SendMessage welcomeMessage(Update update) {
+        UserDTO user = findUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage message;
         message = new SendMessage()
                 .setChatId(update.getMessage().getChatId())
@@ -201,17 +257,20 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
         if(user == null){
             rowInline1.add(new InlineKeyboardButton().setText("Iscrizione").setCallbackData("iscrizione"));
         } else {
             rowInline1.add(new InlineKeyboardButton().setText("Cancellazione").setCallbackData("cancellazione"));
             rowInline1.add(new InlineKeyboardButton().setText("Credito residuo").setCallbackData("creditoResiduo"));
-            rowInline2.add(new InlineKeyboardButton().setText("Lista dei prodotti").setCallbackData("listaProdotti"));
+            rowInline2.add(new InlineKeyboardButton().setText("I tuoi ordini").setCallbackData("listaOrdini"));
+            rowInline3.add(new InlineKeyboardButton().setText("Lista dei prodotti").setCallbackData("listaProdotti"));
         }
 
         // Set the keyboard to the markup
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
+        rowsInline.add(rowInline3);
         // Add it to the message
         markupInline.setKeyboard(rowsInline);
         message.setReplyMarkup(markupInline);
