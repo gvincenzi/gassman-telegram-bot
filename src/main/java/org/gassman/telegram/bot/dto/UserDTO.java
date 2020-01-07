@@ -13,4 +13,8 @@ public class UserDTO {
     private String surname;
     private String mail;
     private Integer telegramUserId;
+
+    public String toHTTPQuery(String prefix) {
+        return prefix + ".id=" + id;
+    }
 }

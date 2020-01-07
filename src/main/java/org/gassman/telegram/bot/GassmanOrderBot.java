@@ -21,7 +21,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
@@ -31,6 +30,9 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
 
     @Value("${gassman.telegram.bot.token}")
     private String botToken;
+
+    @Value("${gassman.template.paymentInternalCreditURL}")
+    public String templatePaymentInternalCreditURL;
 
     @Autowired
     private UserResourceClient userResourceClient;
@@ -110,11 +112,18 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                     .setText(orderDTO.toString());
                 InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                //rowInline.add(new InlineKeyboardButton().setText("Paga questo ordine").setCallbackData("orderPayment#" + orderId));
-                rowInline.add(new InlineKeyboardButton().setText("Torna alla lista").setCallbackData("listaOrdini"));
+                List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+                List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+
+                String paymentInternalCreditURL = String.format(templatePaymentInternalCreditURL,orderDTO.toHTTPQuery()).replaceAll(" ","%20");
+                rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine").setUrl(paymentInternalCreditURL));
+                rowInline2.add(new InlineKeyboardButton().setText("Torna alla lista").setCallbackData("listaOrdini"));
                 // Set the keyboard to the markup
-                rowsInline.add(rowInline);
+                if(!orderDTO.getPaid()){
+                    rowsInline.add(rowInline1);
+                }
+
+                rowsInline.add(rowInline2);
                 // Add it to the message
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
