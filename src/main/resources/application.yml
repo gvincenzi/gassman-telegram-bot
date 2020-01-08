@@ -20,4 +20,4 @@ gassman:
       token: YOUR_TOKEN
 
   template:
-    paymentInternalCreditURL: http://localhost:8881/gassman-payment-service/internal-credit/make/payment?%s
+    paymentInternalCreditURL: http://localhost:8881/gassman-payment-service/internal-credit/make/payment/%d

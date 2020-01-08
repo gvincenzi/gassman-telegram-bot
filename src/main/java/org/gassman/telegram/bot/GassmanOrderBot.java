@@ -115,7 +115,7 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
 
-                String paymentInternalCreditURL = String.format(templatePaymentInternalCreditURL,orderDTO.toHTTPQuery()).replaceAll(" ","%20");
+                String paymentInternalCreditURL = String.format(templatePaymentInternalCreditURL,orderDTO.getOrderId()).replaceAll(" ","%20");
                 rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine").setUrl(paymentInternalCreditURL));
                 rowInline2.add(new InlineKeyboardButton().setText("Torna alla lista").setCallbackData("listaOrdini"));
                 // Set the keyboard to the markup
