@@ -4,6 +4,17 @@ server:
 spring:
   application:
     name: gassman-telegram-bot-service
+  rabbitmq:
+    addresses: amqp://***
+    cloud:
+      stream:
+        bindings:
+          userRegistrationChannel:
+            destination: gassman-user-registration
+          userOrderChannel:
+            destination: gassman-order-registration
+          orderPaymentConfirmationChannel:
+            destination: gassman-order-payment-confirmation
 eureka:
   instance:
     hostname: localhost

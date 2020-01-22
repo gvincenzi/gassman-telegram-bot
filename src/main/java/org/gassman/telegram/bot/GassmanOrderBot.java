@@ -48,8 +48,6 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
 
     List<ProductDTO> products;
 
-    LocalDateTime lastProductsUpdate;
-
     Map<Integer, OrderDTO> orderInProgess = new HashMap<>();
 
     @Override
