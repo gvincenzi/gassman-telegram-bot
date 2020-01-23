@@ -183,6 +183,10 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 message = new SendMessage()
                         .setChatId(chat_id)
                         .setText("Ordine creato correttamente, inviare un ulteriore messaggio indicando solo la quantità desiderata (solo il valore numerico, senza unità di misura) per finalizzare l'ordine");
+            } else if (call_data.equals("fondoCassa")) {
+                message = new SendMessage()
+                        .setChatId(chat_id)
+                        .setText("Fondo cassa corrente : " + userCreditResourceClient.totalUserCredit() + "€");
             }
         }
 
@@ -265,6 +269,7 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
         List<InlineKeyboardButton> rowInline3 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline4 = new ArrayList<>();
         if(user == null){
             rowInline1.add(new InlineKeyboardButton().setText("Iscrizione").setCallbackData("iscrizione"));
         } else {
@@ -272,12 +277,16 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
             rowInline1.add(new InlineKeyboardButton().setText("Credito residuo").setCallbackData("creditoResiduo"));
             rowInline2.add(new InlineKeyboardButton().setText("I tuoi ordini").setCallbackData("listaOrdini"));
             rowInline3.add(new InlineKeyboardButton().setText("Lista dei prodotti").setCallbackData("listaProdotti"));
+            rowInline4.add(new InlineKeyboardButton().setText("Fondo cassa").setCallbackData("fondoCassa"));
         }
 
         // Set the keyboard to the markup
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
         rowsInline.add(rowInline3);
+        if(user.getAdministrator()){
+            rowsInline.add(rowInline4);
+        }
         // Add it to the message
         markupInline.setKeyboard(rowsInline);
         message.setReplyMarkup(markupInline);

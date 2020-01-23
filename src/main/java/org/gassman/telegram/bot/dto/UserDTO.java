@@ -13,6 +13,7 @@ public class UserDTO {
     private String surname;
     private String mail;
     private Integer telegramUserId;
+    private Boolean administrator;
 
     public String toHTTPQuery(String prefix) {
         return prefix + ".id=" + id;
