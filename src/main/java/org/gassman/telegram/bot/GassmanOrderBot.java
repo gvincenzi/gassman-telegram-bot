@@ -284,7 +284,7 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
         rowsInline.add(rowInline1);
         rowsInline.add(rowInline2);
         rowsInline.add(rowInline3);
-        if(user.getAdministrator()){
+        if(user != null && user.getAdministrator()){
             rowsInline.add(rowInline4);
         }
         // Add it to the message
