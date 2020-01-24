@@ -20,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -187,6 +188,32 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 message = new SendMessage()
                         .setChatId(chat_id)
                         .setText("Fondo cassa corrente : " + userCreditResourceClient.totalUserCredit() + "€");
+            } else if (call_data.equals("totaliFornitori")) {
+                this.products = productResourceClient.findAll();
+                if (products.isEmpty()) {
+                    message = new SendMessage()
+                            .setChatId(chat_id)
+                            .setText("Non ci sono prodotti attualmente attivi");
+                } else {
+                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                    Collections.sort(products);
+                    String productLines = "";
+                    for (ProductDTO productDTO : products) {
+                        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                        computeTotalAmountSupplier(productDTO);
+                        productLines += "\n"+productDTO.getName() + " : " + computeTotalAmountSupplier(productDTO) + " €";
+                        rowsInline.add(rowInline);
+                    }
+
+                    markupInline.setKeyboard(rowsInline);
+                    message = new SendMessage()
+                            .setChatId(chat_id)
+                            .setText("Qui di seguito la lista dei prodotti attualmente attivi con il totale dovuto al fornitore associato:\n" + productLines);
+
+                    message.setReplyMarkup(markupInline);
+                }
+
             }
         }
 
@@ -278,6 +305,7 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
             rowInline2.add(new InlineKeyboardButton().setText("I tuoi ordini").setCallbackData("listaOrdini"));
             rowInline3.add(new InlineKeyboardButton().setText("Lista dei prodotti").setCallbackData("listaProdotti"));
             rowInline4.add(new InlineKeyboardButton().setText("Fondo cassa").setCallbackData("fondoCassa"));
+            rowInline4.add(new InlineKeyboardButton().setText("Totali dovuti ai fornitori").setCallbackData("totaliFornitori"));
         }
 
         // Set the keyboard to the markup
@@ -301,5 +329,15 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         return botToken;
+    }
+
+    private BigDecimal computeTotalAmountSupplier(ProductDTO productDTO) {
+        BigDecimal total = BigDecimal.ZERO;
+        List<OrderDTO> productOrders = productResourceClient.findProductOrders(productDTO.getProductId());
+        for(OrderDTO order : productOrders){
+            total = total.add(BigDecimal.valueOf(order.getQuantity()).multiply(order.getProduct().getPricePerUnit()));
+        }
+
+        return total;
     }
 }
