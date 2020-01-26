@@ -1,5 +1,6 @@
 package org.gassman.telegram.bot.client;
 
+import org.gassman.telegram.bot.configuration.FeignClientConfiguration;
 import org.gassman.telegram.bot.dto.OrderDTO;
 import org.gassman.telegram.bot.dto.ProductDTO;
 import org.gassman.telegram.bot.dto.UserDTO;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient("gassman-order-service/products")
+@FeignClient(name = "gassman-order-service/products", configuration = FeignClientConfiguration.class)
 public interface ProductResourceClient {
     @GetMapping()
     List<ProductDTO> findAll();

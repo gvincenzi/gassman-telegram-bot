@@ -1,5 +1,6 @@
 package org.gassman.telegram.bot.client;
 
+import org.gassman.telegram.bot.configuration.FeignClientConfiguration;
 import org.gassman.telegram.bot.dto.OrderDTO;
 import org.gassman.telegram.bot.dto.ProductDTO;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.Optional;
 
-@FeignClient("gassman-order-service/orders")
+@FeignClient(name = "gassman-order-service/orders", configuration = FeignClientConfiguration.class)
 public interface OrderResourceClient {
     @GetMapping("/users/{id}")
     List<OrderDTO> findAllOrdersByUser(@PathVariable Long id);

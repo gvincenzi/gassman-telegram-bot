@@ -24,6 +24,13 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8880/eureka
 
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 15000
+        readTimeout: 15000
+
 gassman:
   telegram:
     bot:
@@ -31,4 +38,8 @@ gassman:
       token: YOUR_TOKEN
 
   template:
-    paymentInternalCreditURL: http://localhost:8881/gassman-payment-service/internal-credit/make/payment/%d
+    paymentInternalCreditURL: http://localhost:8881/gassman-payment-service/public/internal-credit/make/payment/%d
+
+  api:
+    username:
+    password:
