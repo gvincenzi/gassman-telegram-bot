@@ -20,4 +20,7 @@ public interface UserResourceClient {
 
     @GetMapping("/administrator")
     List<UserDTO> getAdministrators();
+
+    @GetMapping
+    List<UserDTO> getUsers();
 }
