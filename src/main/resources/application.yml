@@ -37,9 +37,6 @@ gassman:
       username: YOUR_USERNAME
       token: YOUR_TOKEN
 
-  template:
-    paymentInternalCreditURL: http://localhost:8881/gassman-payment-service/public/internal-credit/make/payment/%d
-
   api:
     username:
     password:

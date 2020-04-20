@@ -29,9 +29,6 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
     @Value("${gassman.telegram.bot.token}")
     private String botToken;
 
-    @Value("${gassman.template.paymentInternalCreditURL}")
-    public String templatePaymentInternalCreditURL;
-
     @Autowired
     ResourceManagerService resourceManagerService;
 
@@ -91,8 +88,8 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
                 List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
 
-                String paymentInternalCreditURL = String.format(templatePaymentInternalCreditURL,orderDTO.getOrderId()).replaceAll(" ","%20");
                 // Payment via URL in 1.1.0 version
+                // String paymentInternalCreditURL = String.format(templatePaymentInternalCreditURL,orderDTO.getOrderId()).replaceAll(" ","%20");
                 // rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine").setUrl(paymentInternalCreditURL));
                 rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine : "+ NumberFormat.getCurrencyInstance().format(orderDTO.getTotalToPay())).setCallbackData("makePayment#"+orderDTO.getOrderId()));
                 rowInline2.add(new InlineKeyboardButton().setText("Torna alla lista").setCallbackData("listaOrdini"));
