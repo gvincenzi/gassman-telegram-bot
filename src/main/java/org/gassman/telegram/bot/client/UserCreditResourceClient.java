@@ -5,6 +5,7 @@ import org.gassman.telegram.bot.dto.UserCreditDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.math.BigDecimal;
 
@@ -15,4 +16,10 @@ public interface UserCreditResourceClient {
 
     @GetMapping("/totalUserCredit")
     BigDecimal totalUserCredit();
+
+    @GetMapping("/order/{orderId}/price")
+    BigDecimal getOrderPrice(@PathVariable("orderId") Long orderId);
+
+    @PutMapping(value = "/order/{orderId}/pay")
+    String makePayment(@PathVariable("orderId") Long orderId);
 }

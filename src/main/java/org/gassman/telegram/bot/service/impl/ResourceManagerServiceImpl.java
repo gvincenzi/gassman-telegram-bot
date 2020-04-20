@@ -11,6 +11,7 @@ import org.gassman.telegram.bot.dto.UserCreditDTO;
 import org.gassman.telegram.bot.dto.UserDTO;
 import org.gassman.telegram.bot.service.ResourceManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -58,7 +59,9 @@ public class ResourceManagerServiceImpl implements ResourceManagerService {
     public OrderDTO getOrder(String call_data) {
         String[] split = call_data.split("#");
         Long orderId = Long.parseLong(split[1]);
-        return orderResourceClient.findOrderById(orderId);
+        OrderDTO orderDTO = orderResourceClient.findOrderById(orderId);
+        orderDTO.setTotalToPay(userCreditResourceClient.getOrderPrice(orderId));
+        return orderDTO;
     }
 
     @Override
@@ -109,5 +112,10 @@ public class ResourceManagerServiceImpl implements ResourceManagerService {
     @Override
     public void deleteUser(Integer user_id) {
         userResourceClient.deleteUser(user_id);
+    }
+
+    @Override
+    public String makePayment(OrderDTO orderDTO) {
+        return userCreditResourceClient.makePayment(orderDTO.getOrderId());
     }
 }

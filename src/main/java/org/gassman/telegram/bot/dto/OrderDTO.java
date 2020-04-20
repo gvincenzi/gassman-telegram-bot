@@ -1,5 +1,6 @@
 package org.gassman.telegram.bot.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,8 @@ public class OrderDTO implements Comparable<OrderDTO>{
     private UserDTO user;
     private ProductDTO product;
     private Boolean paid = Boolean.FALSE;
+    @JsonIgnore
+    private BigDecimal totalToPay;
 
     @Override
     public int compareTo(OrderDTO orderDTO) {

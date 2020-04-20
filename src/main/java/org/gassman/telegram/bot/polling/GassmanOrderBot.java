@@ -18,6 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 @Component
@@ -91,7 +92,9 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
 
                 String paymentInternalCreditURL = String.format(templatePaymentInternalCreditURL,orderDTO.getOrderId()).replaceAll(" ","%20");
-                rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine").setUrl(paymentInternalCreditURL));
+                // Payment via URL in 1.1.0 version
+                // rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine").setUrl(paymentInternalCreditURL));
+                rowInline1.add(new InlineKeyboardButton().setText("Paga questo ordine : "+ NumberFormat.getCurrencyInstance().format(orderDTO.getTotalToPay())).setCallbackData("makePayment#"+orderDTO.getOrderId()));
                 rowInline2.add(new InlineKeyboardButton().setText("Torna alla lista").setCallbackData("listaOrdini"));
                 // Set the keyboard to the markup
                 if(!orderDTO.getPaid()){
@@ -138,6 +141,9 @@ public class GassmanOrderBot extends TelegramLongPollingBot {
                 // Add it to the message
                 markupInline.setKeyboard(rowsInline);
                 message.setReplyMarkup(markupInline);
+            } else if (call_data.startsWith("makePayment#")) {
+                OrderDTO orderDTO = resourceManagerService.getOrder(call_data);
+                message = itemFactory.message(chat_id, resourceManagerService.makePayment(orderDTO));
             } else if (call_data.startsWith("order#")) {
                 resourceManagerService.putOrderInProgress(orderInProgess,call_data,user_id);
                 message = itemFactory.message(chat_id,"Ordine creato correttamente, inviare un ulteriore messaggio indicando solo la quantità desiderata (solo il valore numerico, senza unità di misura) per finalizzare l'ordine");

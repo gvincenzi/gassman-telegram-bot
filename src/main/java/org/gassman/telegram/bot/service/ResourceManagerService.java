@@ -22,4 +22,5 @@ public interface ResourceManagerService {
     List<OrderDTO> findProductOrders(Long productId);
     void postOrder(OrderDTO orderDTO);
     void putOrderInProgress(Map<Integer, OrderDTO> orderInProgess, String call_data, Integer user_id);
+    String makePayment(OrderDTO orderDTO);
 }
